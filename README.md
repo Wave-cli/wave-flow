@@ -1,6 +1,23 @@
 # wave-flow
 
+[![GitHub stars](https://img.shields.io/github/stars/Wave-cli/wave-flow?style=flat&logo=github)](https://github.com/Wave-cli/wave-flow/stargazers)
+[![Issues](https://img.shields.io/github/issues/Wave-cli/wave-flow?style=flat&logo=github)](https://github.com/Wave-cli/wave-flow/issues)
+[![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen?style=flat)](LICENSE)
+[![Go](https://img.shields.io/badge/go-1.25.0-00ADD8?style=flat&logo=go&logoColor=white)](https://go.dev/)
+[![Release](https://img.shields.io/github/v/release/Wave-cli/wave-flow?style=flat&logo=github)](https://github.com/Wave-cli/wave-flow/releases)
+
 Development workflow automation plugin for [wave](https://github.com/wave-cli/wave-core).
+
+## Table of contents
+
+- [What it does](#what-it-does)
+- [Wavefile example](#wavefile-example)
+- [Usage](#usage)
+- [Install](#install)
+- [Local development install](#local-development-install)
+- [Config format](#config-format)
+- [Errors](#errors)
+- [Development](#development)
 
 ## What it does
 
@@ -31,30 +48,41 @@ wave flow clean
 wave flow --list
 ```
 
-## Schema fields
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `cmd` | string | yes | Shell command to execute |
-| `on_success` | string | no | Command to run after successful execution |
-| `on_fail` | string | no | Command to run after failed execution |
-| `env` | map | no | Additional environment variables |
-| `watch` | string/array | no | File patterns to watch for changes |
-
-## How it works
-
-1. wave-core reads the `[flow]` section from the Wavefile
-2. wave-core validates the section against the flow schema (Waveschema)
-3. wave-core passes the section as JSON on stdin to the flow binary
-4. flow parses the command, executes it via `sh -c`, and runs callbacks
-
-Commands must be defined as **inline maps** under `[flow]`. Nested headers like `[flow.build]` are rejected by wave-core's rules engine.
-
 ## Install
 
 ```bash
-wave install wave-cli/wave-flow
+wave install wave-cli/flow
 ```
+
+## Local development install
+
+Use this if you are working on `wave-flow` locally and want to test without publishing a release:
+
+```bash
+go build -o bin/flow .
+
+mkdir -p ~/.wave/plugins/wave-cli/flow/v0.1.0/bin
+cp bin/flow ~/.wave/plugins/wave-cli/flow/v0.1.0/bin/flow
+cp Waveplugin ~/.wave/plugins/wave-cli/flow/v0.1.0/Waveplugin
+ln -sfn ~/.wave/plugins/wave-cli/flow/v0.1.0 ~/.wave/plugins/wave-cli/flow/current
+```
+
+## Config format
+
+Commands live under `[flow]` as inline tables. `cmd` is required.
+
+- `cmd` (string, required): shell command to execute (`sh -c`)
+- `on_success` (string, optional): runs if the main command exits 0
+- `on_fail` (string, optional): runs if the main command exits non-zero
+- `env` (table/map, optional): extra env vars (values coerced to strings)
+- `watch` (string or array, optional): reserved for future watch mode
+
+## Errors
+
+wave-flow emits structured JSON errors on stderr using wave-core's SDK.
+
+- Codes are lowercase-and-dashes (example: `flow-resolve-error`)
+- Common codes: `flow-config-error`, `flow-no-command`, `flow-no-commands`, `flow-resolve-error`
 
 ## Development
 
