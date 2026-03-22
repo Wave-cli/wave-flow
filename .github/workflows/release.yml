@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/checkout@v4
+        with:
+          repository: wave-cli/wave-core
+          path: _deps/wave-core
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.0'
+
+      - name: Build plugin archives
+        run: |
+          go mod edit -replace github.com/wave-cli/wave-core=./_deps/wave-core
+
+          for os in linux darwin; do
+            for arch in amd64 arm64; do
+              GOOS=${os} GOARCH=${arch} go build -o flow .
+              tar -czf "flow-${os}-${arch}.tar.gz" flow
+              rm -f flow
+            done
+          done
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            flow-*.tar.gz
+            Waveplugin
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
