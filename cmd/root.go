@@ -47,7 +47,19 @@ func Run(args []string, r io.Reader, stdout, stderr io.Writer) int {
 		return 0
 	}
 
+	// Parse command and flags
 	cmdName := args[0]
+	watchMode := false
+
+	// Check for --watch flag
+	for i, arg := range args {
+		if arg == "--watch" || arg == "-w" {
+			watchMode = true
+			// Remove the flag from args
+			args = append(args[:i], args[i+1:]...)
+			break
+		}
+	}
 
 	// Resolve and execute the command
 	cmd, err := flow.ResolveCommand(config, cmdName)
@@ -58,6 +70,16 @@ func Run(args []string, r io.Reader, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "Available: %s\n", strings.Join(available, ", "))
 		fmt.Fprintln(stderr, "Run 'wave flow --list' to see available commands.")
 		return 1
+	}
+
+	// Run with watch mode if enabled or if command has watch patterns
+	if watchMode || len(cmd.Watch) > 0 {
+		if len(cmd.Watch) == 0 {
+			fmt.Fprintln(stderr, "Error: --watch flag requires watch patterns in command config")
+			fmt.Fprintln(stderr, "Add watch = [\"*.go\"] to your command in Wavefile")
+			return 1
+		}
+		return flow.RunWithWatch(cmd, stdout, stderr)
 	}
 
 	return flow.RunCommand(cmd, stdout, stderr)

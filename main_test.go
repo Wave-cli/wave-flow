@@ -155,14 +155,17 @@ func TestRunUnknownCommand(t *testing.T) {
 	if code != 1 {
 		t.Errorf("exit code = %d, want 1", code)
 	}
-	// Check plain text error format: "code: message\ndetails"
-	errCode := parsePlainErrorCode(t, stderr.String())
-	if errCode != "flow-resolve-error" {
-		t.Errorf("error code = %q, want 'flow-resolve-error'", errCode)
+	// Check for clean error message (no longer uses error codes for resolve errors)
+	errOutput := stderr.String()
+	if !strings.Contains(errOutput, "command not found") {
+		t.Errorf("expected 'command not found' in stderr, got: %q", errOutput)
+	}
+	if !strings.Contains(errOutput, "deploy") {
+		t.Errorf("expected command name 'deploy' in stderr, got: %q", errOutput)
 	}
 	// Should suggest using --list
-	if !strings.Contains(stderr.String(), "wave flow --list") {
-		t.Errorf("expected stderr to suggest 'wave flow --list', got: %q", stderr.String())
+	if !strings.Contains(errOutput, "wave flow --list") {
+		t.Errorf("expected stderr to suggest 'wave flow --list', got: %q", errOutput)
 	}
 }
 
