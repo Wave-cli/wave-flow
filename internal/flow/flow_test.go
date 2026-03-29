@@ -10,9 +10,10 @@ import (
 
 func TestParseCommandHappyPath(t *testing.T) {
 	entry := map[string]any{
-		"cmd":        "go build -o ./bin/app",
-		"on_success": "echo build done",
-		"on_fail":    "echo build failed",
+		"cmd":         "go build -o ./bin/app",
+		"description": "Build the app",
+		"on_success":  "echo build done",
+		"on_fail":     "echo build failed",
 		"env": map[string]any{
 			"GOOS":   "linux",
 			"GOARCH": "amd64",
@@ -34,6 +35,9 @@ func TestParseCommandHappyPath(t *testing.T) {
 	}
 	if cmd.OnFail != "echo build failed" {
 		t.Errorf("OnFail = %q", cmd.OnFail)
+	}
+	if cmd.Desc != "Build the app" {
+		t.Errorf("Desc = %q", cmd.Desc)
 	}
 	if cmd.Env["GOOS"] != "linux" {
 		t.Errorf("Env[GOOS] = %q", cmd.Env["GOOS"])
@@ -61,8 +65,26 @@ func TestParseCommandMinimal(t *testing.T) {
 	if cmd.OnFail != "" {
 		t.Errorf("OnFail should be empty, got %q", cmd.OnFail)
 	}
+	if cmd.Desc != "" {
+		t.Errorf("Desc should be empty, got %q", cmd.Desc)
+	}
 	if len(cmd.Env) != 0 {
 		t.Errorf("Env should be empty, got %v", cmd.Env)
+	}
+}
+
+func TestParseCommandDescAlias(t *testing.T) {
+	entry := map[string]any{
+		"cmd":  "echo hello",
+		"desc": "Say hello",
+	}
+
+	cmd, err := ParseCommand("hello", entry)
+	if err != nil {
+		t.Fatalf("ParseCommand failed: %v", err)
+	}
+	if cmd.Desc != "Say hello" {
+		t.Errorf("Desc = %q", cmd.Desc)
 	}
 }
 

@@ -7,8 +7,6 @@ package flow
 import (
 	"fmt"
 	"io"
-	"os"
-	"os/exec"
 	"sort"
 	"strings"
 )
@@ -17,6 +15,7 @@ import (
 type Command struct {
 	Name      string            // Command name (e.g. "build", "clean")
 	Cmd       string            // Shell command to execute
+	Desc      string            // Optional description
 	OnSuccess string            // Command to run on success (optional)
 	OnFail    string            // Command to run on failure (optional)
 	Env       map[string]string // Extra environment variables (optional)
@@ -51,6 +50,11 @@ func ParseCommand(name string, entry map[string]any) (*Command, error) {
 	}
 	if v, ok := entry["on_fail"].(string); ok {
 		cmd.OnFail = v
+	}
+	if v, ok := entry["description"].(string); ok {
+		cmd.Desc = v
+	} else if v, ok := entry["desc"].(string); ok {
+		cmd.Desc = v
 	}
 
 	// Optional env map
@@ -136,16 +140,7 @@ func RunCommand(cmd *Command, stdout, stderr io.Writer) int {
 
 // shellExec runs a command string via sh -c, inheriting env + extra vars.
 func shellExec(cmdStr string, extraEnv map[string]string, stdout, stderr io.Writer) int {
-	c := exec.Command("sh", "-c", cmdStr)
-	c.Stdout = stdout
-	c.Stderr = stderr
-
-	// Inherit environment + add extra vars
-	env := os.Environ()
-	for k, v := range extraEnv {
-		env = append(env, k+"="+v)
-	}
-	c.Env = env
+	c := newShellCmd(cmdStr, extraEnv, stdout, stderr)
 
 	if err := c.Run(); err != nil {
 		if c.ProcessState != nil {
