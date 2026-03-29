@@ -71,16 +71,7 @@ func (w *Watcher) startProcess() error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
-	c := exec.Command("sh", "-c", w.cmd.Cmd)
-	c.Stdout = w.stdout
-	c.Stderr = w.stderr
-
-	// Inherit environment + add extra vars
-	env := os.Environ()
-	for k, v := range w.cmd.Env {
-		env = append(env, k+"="+v)
-	}
-	c.Env = env
+	c := newShellCmd(w.cmd.Cmd, w.cmd.Env, w.stdout, w.stderr)
 
 	// Create new process group so we can kill children too
 	c.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}

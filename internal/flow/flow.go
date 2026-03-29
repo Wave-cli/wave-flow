@@ -7,8 +7,6 @@ package flow
 import (
 	"fmt"
 	"io"
-	"os"
-	"os/exec"
 	"sort"
 	"strings"
 )
@@ -136,16 +134,7 @@ func RunCommand(cmd *Command, stdout, stderr io.Writer) int {
 
 // shellExec runs a command string via sh -c, inheriting env + extra vars.
 func shellExec(cmdStr string, extraEnv map[string]string, stdout, stderr io.Writer) int {
-	c := exec.Command("sh", "-c", cmdStr)
-	c.Stdout = stdout
-	c.Stderr = stderr
-
-	// Inherit environment + add extra vars
-	env := os.Environ()
-	for k, v := range extraEnv {
-		env = append(env, k+"="+v)
-	}
-	c.Env = env
+	c := newShellCmd(cmdStr, extraEnv, stdout, stderr)
 
 	if err := c.Run(); err != nil {
 		if c.ProcessState != nil {
