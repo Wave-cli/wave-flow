@@ -16,14 +16,14 @@ Usage:
 
 Flags:
   -l, --list    List all available flow commands
-  -w, --watch   Run command in watch mode (restart on file changes)
+  -w, --watch   Force watch mode (auto-enabled when watch patterns exist)
   -v, --version Show version information
   -h, --help    Show this help message
 
 Examples:
   wave flow build         Run the 'build' command
-  wave flow dev           Run the 'dev' command
-  wave flow dev --watch   Run 'dev' in watch mode
+  wave flow dev           Run the 'dev' command (watch auto if configured)
+  wave flow dev --watch   Force watch mode
   wave flow --list        List all flow commands
   wave flow --version     Show version
 

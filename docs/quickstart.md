@@ -41,7 +41,7 @@ wave flow --list
 | `env` | Environment variables as key-value pairs |
 | `on_success` | Command to run if main command succeeds |
 | `on_fail` | Command to run if main command fails |
-| `watch` | File patterns for watch mode (future) |
+| `watch` | File patterns for watch mode (auto-restarts on change) |
 
 ## Example with all options
 

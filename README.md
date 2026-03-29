@@ -101,7 +101,7 @@ Commands live under `[flow]` as inline tables. `cmd` is required.
 - `on_success` (string, optional): runs if the main command exits 0
 - `on_fail` (string, optional): runs if the main command exits non-zero
 - `env` (table/map, optional): extra env vars (values coerced to strings)
-- `watch` (string or array, optional): reserved for future watch mode
+- `watch` (string or array, optional): file patterns for watch mode; commands auto-restart on changes
 
 ## Errors
 
